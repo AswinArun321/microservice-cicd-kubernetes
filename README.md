@@ -534,6 +534,6 @@ Rajagiri College of Social Sciences
 
 GitHub: [AswinArun321](https://github.com/AswinArun321)
 
-# 📄 License
+# License
 
 This project is intended for educational and portfolio purposes.

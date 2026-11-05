@@ -21,3 +21,4 @@ Start-Sleep -Seconds 3
 
 Write-Host "All 3 microservices started in background! (PIDs: $($pids -join ', '))" -ForegroundColor Green
 Write-Host "Run '.\scripts\smoke-test.ps1' to test, and '.\scripts\stop-local.ps1' to stop them." -ForegroundColor Yellow
+

@@ -6,3 +6,4 @@ metadata:
     name: microservices
     environment: dev
     app.kubernetes.io/part-of: microservice-cicd-kubernetes
+

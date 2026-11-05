@@ -42,3 +42,4 @@ output "configure_kubectl_command" {
   description = "AWS CLI command to configure local kubeconfig for the cluster"
   value       = "aws eks update-kubeconfig --region ${var.aws_region} --name ${module.eks.cluster_name}"
 }
+

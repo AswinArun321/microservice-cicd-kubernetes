@@ -73,3 +73,4 @@ For this project's **cost-controlled demo mode**:
 3. **Private Subnets & Dual NAT Gateways:** Enable `enable_nat = true` across multiple AZs.
 4. **Custom Domain & TLS via Route 53 + AWS ACM:** Attach an AWS Certificate Manager (ACM) TLS certificate to the Application Load Balancer for HTTPS termination on port 443.
 5. **Observability Stack:** Deploy Prometheus Operator, Grafana, and AWS OpenTelemetry Collector for distributed tracing and SLO alerting."
+

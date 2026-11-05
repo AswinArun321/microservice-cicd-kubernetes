@@ -93,3 +93,4 @@ cd ../../bootstrap
 terraform destroy -auto-approve
 ```
 *(Note: Keep the bootstrap bucket and ECR repositories if you plan to re-run demos, as idle storage costs are mere pennies).*
+

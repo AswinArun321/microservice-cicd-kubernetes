@@ -102,3 +102,4 @@ spec:
 The default NetworkPolicy in `k8s/base/networkpolicy.yaml` applies a **default-deny** ingress and egress rule to all pods in `microservices`:
 - Egress is explicitly granted only to CoreDNS in `kube-system` on port 53 (UDP/TCP).
 - Ingress is restricted to HTTP ports `5001`, `5002`, and `5003` from authorized ingress controller namespaces or intra-namespace pods.
+

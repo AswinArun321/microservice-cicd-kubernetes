@@ -186,3 +186,4 @@ graph TD
    - Linux capabilities dropped (`capabilities: drop: ["ALL"]`).
    - Privilege escalation blocked (`allowPrivilegeEscalation: false`).
    - Temporary write buffer confined to an `emptyDir` mounted at `/tmp`.
+

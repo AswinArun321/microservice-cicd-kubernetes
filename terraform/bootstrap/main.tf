@@ -74,3 +74,4 @@ resource "aws_s3_bucket_policy" "enforce_tls" {
     ]
   })
 }
+

@@ -146,3 +146,4 @@ Before running any Terraform commands, configure AWS credentials and budget safe
    terraform init
    terraform plan
    ```
+

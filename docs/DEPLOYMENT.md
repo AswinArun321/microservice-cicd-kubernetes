@@ -94,3 +94,4 @@ kubectl apply -k .
 # Verify rollout
 kubectl rollout status deployment/api-deployment -n microservices --timeout=120s
 ```
+

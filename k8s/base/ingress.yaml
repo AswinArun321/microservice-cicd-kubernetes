@@ -32,3 +32,4 @@ spec:
                 name: worker-service
                 port:
                   number: 5003
+

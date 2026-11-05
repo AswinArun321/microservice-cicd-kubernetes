@@ -198,3 +198,4 @@ resource "aws_eks_access_policy_association" "deployer" {
 
   depends_on = [aws_eks_access_entry.deployer]
 }
+

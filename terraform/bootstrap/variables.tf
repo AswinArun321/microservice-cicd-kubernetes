@@ -15,3 +15,4 @@ variable "project_name" {
   description = "Project name tag"
   default     = "microservice-cicd-kubernetes"
 }
+

@@ -17,3 +17,4 @@ images:
   - name: ghcr.io/aswinarun321/worker-service
     newName: ghcr.io/aswinarun321/worker-service
     newTag: latest
+

@@ -11,3 +11,4 @@ node_instance_types = ["t3.medium"]
 desired_node_count  = 2
 public_access_cidrs = ["0.0.0.0/0"] # In production, restrict to your public IP/32
 create_oidc_provider = true
+

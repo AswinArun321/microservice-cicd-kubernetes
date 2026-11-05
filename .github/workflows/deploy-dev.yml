@@ -106,3 +106,4 @@ jobs:
           kubectl rollout undo deployment/worker-deployment -n microservices || true
           kubectl get pods -n microservices
           exit 1
+

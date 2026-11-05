@@ -86,3 +86,4 @@ if ($jobResponse.message -match "accepted") {
 Write-Host "==================================================" -ForegroundColor Cyan
 Write-Host " ALL SMOKE TESTS PASSED SUCCESSFULLY! " -ForegroundColor Green
 Write-Host "==================================================" -ForegroundColor Cyan
+

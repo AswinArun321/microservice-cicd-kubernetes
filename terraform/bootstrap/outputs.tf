@@ -12,3 +12,4 @@ output "aws_region" {
   description = "Region where the state bucket is deployed"
   value       = var.aws_region
 }
+

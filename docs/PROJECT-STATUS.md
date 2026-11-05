@@ -41,3 +41,4 @@
    - *Remediation*: Replaced with `secretKeyRef` pointing to `app-secrets` (`JWT_SECRET`), and created `k8s/base/secret.example.yaml`.
 5. **End-to-End Validation**:
    - *Remediation*: Created end-to-end smoke test scripts (`scripts/smoke-test.sh` and `scripts/smoke-test.ps1`) executing authentication, verification, data retrieval, and job scheduling.
+

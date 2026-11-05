@@ -30,7 +30,7 @@ jobs:
     environment: dev # Protected environment requiring manual approval
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Determine Image Tag
         id: tag

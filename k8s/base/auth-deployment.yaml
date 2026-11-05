@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: auth-deployment
+  namespace: microservices
   labels:
     app: auth-service
     tier: backend
@@ -21,11 +22,14 @@ spec:
         app: auth-service
         tier: backend
     spec:
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 10001
         runAsGroup: 10001
         fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: auth-service
           image: ghcr.io/aswinarun321/auth-service:latest
@@ -39,7 +43,10 @@ spec:
             - name: PORT
               value: "5001"
             - name: JWT_SECRET
-              value: "microservice-super-secret-key-321"
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: JWT_SECRET
           resources:
             requests:
               cpu: "100m"
@@ -47,25 +54,39 @@ spec:
             limits:
               cpu: "250m"
               memory: "256Mi"
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 5001
+            initialDelaySeconds: 3
+            periodSeconds: 3
+            timeoutSeconds: 2
+            failureThreshold: 10
           livenessProbe:
             httpGet:
               path: /health
               port: 5001
-            initialDelaySeconds: 15
+            initialDelaySeconds: 5
             periodSeconds: 10
-            timeoutSeconds: 5
+            timeoutSeconds: 3
             failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /health
               port: 5001
-            initialDelaySeconds: 5
+            initialDelaySeconds: 3
             periodSeconds: 5
-            timeoutSeconds: 3
+            timeoutSeconds: 2
             failureThreshold: 2
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false
+            readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - ALL
+          volumeMounts:
+            - name: tmp-volume
+              mountPath: /tmp
+      volumes:
+        - name: tmp-volume
+          emptyDir: {}

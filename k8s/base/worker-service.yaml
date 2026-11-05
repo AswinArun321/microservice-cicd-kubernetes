@@ -2,14 +2,16 @@ apiVersion: v1
 kind: Service
 metadata:
   name: worker-service
+  namespace: microservices
   labels:
     app: worker-service
+    tier: background
 spec:
   type: ClusterIP
-  selector:
-    app: worker-service
   ports:
-    - name: http
-      port: 5003
+    - port: 5003
       targetPort: 5003
       protocol: TCP
+      name: http
+  selector:
+    app: worker-service

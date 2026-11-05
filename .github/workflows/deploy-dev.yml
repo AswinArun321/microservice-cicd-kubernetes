@@ -1,0 +1,108 @@
+name: Deploy to EKS (Dev)
+
+on:
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types:
+      - completed
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Git Commit SHA or tag to deploy"
+        required: false
+        default: ""
+
+permissions:
+  id-token: write # Required for AWS OIDC authentication
+  contents: read
+
+jobs:
+  deploy-to-eks:
+    name: Deploy to Amazon EKS
+    # Run only if the CI pipeline succeeded AND EKS_CLUSTER_NAME variable is configured
+    if: |
+      (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success') &&
+      vars.EKS_CLUSTER_NAME != ''
+    runs-on: ubuntu-latest
+    environment: dev # Protected environment requiring manual approval
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Determine Image Tag
+        id: tag
+        run: |
+          if [ -n "${{ github.event.inputs.image_tag }}" ]; then
+            echo "DEPLOY_TAG=${{ github.event.inputs.image_tag }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "workflow_run" ]; then
+            echo "DEPLOY_TAG=${{ github.event.workflow_run.head_sha }}" >> $GITHUB_OUTPUT
+          else
+            echo "DEPLOY_TAG=${{ github.sha }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Configure AWS Credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_EKS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          audience: sts.amazonaws.com
+
+      - name: Update Kubeconfig for EKS
+        run: |
+          aws eks update-kubeconfig --name ${{ vars.EKS_CLUSTER_NAME }} --region ${{ vars.AWS_REGION }}
+
+      - name: Verify Cluster Connectivity
+        run: |
+          kubectl get nodes -o wide
+          kubectl get namespaces
+
+      - name: Apply App Secrets (if not already present)
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: |
+          if [ -n "$JWT_SECRET" ]; then
+            kubectl create namespace microservices --dry-run=client -o yaml | kubectl apply -f -
+            kubectl create secret generic app-secrets \
+              --namespace microservices \
+              --from-literal=JWT_SECRET="$JWT_SECRET" \
+              --dry-run=client -o yaml | kubectl apply -f -
+          fi
+
+      - name: Update Kustomize Overlay & Deploy
+        run: |
+          cd k8s/overlays/eks
+          DEPLOY_TAG="${{ steps.tag.outputs.DEPLOY_TAG }}"
+          ECR_REGISTRY="${{ vars.ECR_REGISTRY }}"
+
+          echo "Deploying image tag: $DEPLOY_TAG from registry: $ECR_REGISTRY"
+          kustomize edit set image ghcr.io/aswinarun321/auth-service=${ECR_REGISTRY}/auth-service:${DEPLOY_TAG}
+          kustomize edit set image ghcr.io/aswinarun321/api-service=${ECR_REGISTRY}/api-service:${DEPLOY_TAG}
+          kustomize edit set image ghcr.io/aswinarun321/worker-service=${ECR_REGISTRY}/worker-service:${DEPLOY_TAG}
+
+          kubectl apply -k .
+
+      - name: Await Rollout Completion
+        run: |
+          kubectl rollout status deployment/auth-deployment -n microservices --timeout=180s
+          kubectl rollout status deployment/api-deployment -n microservices --timeout=180s
+          kubectl rollout status deployment/worker-deployment -n microservices --timeout=180s
+
+      - name: Post-Deployment Verification
+        run: |
+          kubectl get pods,svc,ingress,hpa -n microservices
+          # Forward or check health through cluster service
+          kubectl run smoke-check --image=curlimages/curl --restart=Never --rm -i -- \
+            curl -s http://auth-service.microservices.svc.cluster.local:5001/health
+
+      - name: Automatic Rollback on Deployment Failure
+        if: failure()
+        run: |
+          echo "Deployment failed! Initiating rollback..."
+          kubectl rollout undo deployment/auth-deployment -n microservices || true
+          kubectl rollout undo deployment/api-deployment -n microservices || true
+          kubectl rollout undo deployment/worker-deployment -n microservices || true
+          kubectl get pods -n microservices
+          exit 1

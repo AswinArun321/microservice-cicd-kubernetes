@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: microservices
+
+resources:
+  - ../../base
+
+patches:
+  - path: ingress-alb-patch.yaml
+    target:
+      group: networking.k8s.io
+      version: v1
+      kind: Ingress
+      name: microservice-ingress
+
+# ECR image repositories and commit SHA tags (substituted by CD workflow)
+images:
+  - name: ghcr.io/aswinarun321/auth-service
+    newName: 123456789012.dkr.ecr.ap-south-1.amazonaws.com/auth-service
+    newTag: latest
+  - name: ghcr.io/aswinarun321/api-service
+    newName: 123456789012.dkr.ecr.ap-south-1.amazonaws.com/api-service
+    newTag: latest
+  - name: ghcr.io/aswinarun321/worker-service
+    newName: 123456789012.dkr.ecr.ap-south-1.amazonaws.com/worker-service
+    newTag: latest

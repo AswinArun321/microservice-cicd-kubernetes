@@ -1,12 +1,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: worker-deployment
+  name: api-deployment
+  namespace: microservices
   labels:
-    app: worker-service
-    tier: background
+    app: api-service
+    tier: backend
 spec:
-  replicas: 1
+  replicas: 2
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -14,34 +15,33 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: worker-service
+      app: api-service
   template:
     metadata:
       labels:
-        app: worker-service
-        tier: background
+        app: api-service
+        tier: backend
     spec:
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 10001
         runAsGroup: 10001
         fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
       containers:
-        - name: worker-service
-          image: ghcr.io/aswinarun321/worker-service:latest
+        - name: api-service
+          image: ghcr.io/aswinarun321/api-service:latest
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 5003
+            - containerPort: 5002
               name: http
           env:
             - name: SERVICE_NAME
-              value: "worker-service"
+              value: "api-service"
             - name: PORT
-              value: "5003"
-            - name: WORKER_INTERVAL
-              value: "5.0"
-            - name: AUTO_START_WORKER
-              value: "true"
+              value: "5002"
           resources:
             requests:
               cpu: "100m"
@@ -49,25 +49,39 @@ spec:
             limits:
               cpu: "250m"
               memory: "256Mi"
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 5002
+            initialDelaySeconds: 3
+            periodSeconds: 3
+            timeoutSeconds: 2
+            failureThreshold: 10
           livenessProbe:
             httpGet:
               path: /health
-              port: 5003
-            initialDelaySeconds: 15
+              port: 5002
+            initialDelaySeconds: 5
             periodSeconds: 10
-            timeoutSeconds: 5
+            timeoutSeconds: 3
             failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /health
-              port: 5003
-            initialDelaySeconds: 5
+              port: 5002
+            initialDelaySeconds: 3
             periodSeconds: 5
-            timeoutSeconds: 3
+            timeoutSeconds: 2
             failureThreshold: 2
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: false
+            readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - ALL
+          volumeMounts:
+            - name: tmp-volume
+              mountPath: /tmp
+      volumes:
+        - name: tmp-volume
+          emptyDir: {}

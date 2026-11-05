@@ -1,0 +1,3 @@
+aws_region         = "ap-south-1"
+bucket_name_prefix = "microservice-tfstate"
+project_name       = "microservice-cicd-kubernetes"

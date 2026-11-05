@@ -26,8 +26,9 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-# Virtual environments
+# Virtual environments & secrets
 .env
+.env.*
 .venv
 env/
 venv/
@@ -46,6 +47,7 @@ htmlcov/
 # Logs
 *.log
 logs/
+crash.log
 
 # IDE and Editor files
 .vscode/
@@ -58,3 +60,16 @@ logs/
 # Temporary files
 scratch/
 tmp/
+
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+!*.tfvars.example
+.terraform/
+.terraform.lock.hcl
+
+# Kubernetes / Cloud Credentials
+kubeconfig*
+*.kubeconfig

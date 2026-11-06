@@ -5,7 +5,6 @@ namespace: microservices
 
 resources:
   - namespace.yaml
-  - secret.example.yaml
   - auth-deployment.yaml
   - auth-service.yaml
   - api-deployment.yaml
